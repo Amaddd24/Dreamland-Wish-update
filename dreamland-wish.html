@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dreamland Wish</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: dark;
+  --night:#15102e; --dusk:#2a1f5c; --peach:#ffb38a; --rose:#ff7f9e; --lilac:#b9a8ff;
+  --mist:#f3eefc; --ink:#1d1740; --lock:#4a4468;
+  --bg:var(--night); --fg:var(--mist);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{height:100%; scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{
+  margin:0; min-height:100%; background:var(--bg); color:var(--fg);
+  font-family:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  transition:background .6s ease,color .6s ease;
+}
+body[data-w="nyata"]{--bg:var(--mist); --fg:var(--ink)}
+body[data-w="mimpi"]{--bg:var(--dusk); --fg:var(--mist)}
+.app{max-width:420px; margin:0 auto; min-height:100dvh; padding:28px 24px 20px; display:flex; flex-direction:column; align-items:center; text-align:center}
+.brand{font-family:Fraunces,Georgia,"Times New Roman",serif; font-weight:700; font-size:30px; line-height:1.1; margin:12px 0 4px}
+.sub{margin:0; font-size:15px; opacity:.75}
+.stage{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:28px; width:100%; padding:24px 0}
+.cek{
+  width:200px; height:200px; border-radius:50%; border:0; cursor:pointer; color:var(--ink);
+  font-family:Fraunces,Georgia,serif; font-weight:700; font-size:44px;
+  background:radial-gradient(circle at 35% 30%, #ffd6b8, var(--peach) 45%, var(--rose));
+  box-shadow:0 0 0 10px rgba(255,179,138,.14), 0 0 60px rgba(255,127,158,.45);
+  animation:breathe 4s ease-in-out infinite; transition:transform .15s ease;
+}
+.cek:active{transform:scale(.95)}
+.cek:focus-visible,.back:focus-visible,summary:focus-visible{outline:3px solid var(--lilac); outline-offset:4px}
+@keyframes breathe{50%{box-shadow:0 0 0 18px rgba(255,179,138,.08), 0 0 80px rgba(255,127,158,.6)}}
+.result{min-height:96px}
+.result h2{font-family:Fraunces,Georgia,serif; font-size:40px; line-height:1.1; margin:0 0 6px}
+.result p{margin:0; font-size:16px; opacity:.8}
+.hint{opacity:.6}
+body[data-w="mimpi"] .result h2{text-shadow:3px 0 var(--rose),-3px 0 var(--lilac); animation:glitch .5s steps(2) 3}
+body[data-w="mimpi"] .app{animation:shake .6s linear 1}
+@keyframes glitch{50%{transform:translateX(3px); text-shadow:-3px 0 var(--rose),3px 0 var(--lilac)}}
+@keyframes shake{20%{transform:translate(-5px,2px)}40%{transform:translate(5px,-2px)}60%{transform:translate(-4px,1px)}80%{transform:translate(4px,-1px)}}
+.back{
+  width:100%; border:2px solid var(--lock); background:transparent; color:var(--fg); border-radius:16px;
+  padding:14px 16px; font:500 16px "DM Sans",system-ui,sans-serif; cursor:pointer; text-align:center;
+}
+.back small{display:block; margin-top:4px; font-size:13px; opacity:.8; font-weight:400}
+.back[aria-disabled="true"]{color:var(--lock); border-style:dashed; cursor:not-allowed}
+.back.on{border-color:var(--peach); background:rgba(255,179,138,.16); animation:breathe 2.5s ease-in-out infinite}
+.back.no{animation:nope .35s linear 1}
+@keyframes nope{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+[hidden]{display:none !important}
+.dose{margin:0; font-size:13px; opacity:.55}
+details{width:100%; margin-top:18px; font-size:14px; text-align:left; opacity:.85}
+summary{cursor:pointer; padding:8px 0}
+label{display:flex; align-items:center; gap:10px; padding:6px 0}
+input[type=checkbox]{width:20px; height:20px; accent-color:var(--peach)}
+.flash{position:fixed; inset:0; background:#fff; opacity:0; pointer-events:none; transition:opacity .7s ease; z-index:5}
+.flash.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{animation:none !important; transition:none !important}}
+</style>
+</head>
+<body data-w="idle">
+<div class="flash" id="flash"></div>
+<main class="app">
+  <header>
+    <h1 class="brand">Dreamland Wish</h1>
+    <p class="sub">Reality Check</p>
+  </header>
+
+  <section class="stage" aria-live="polite">
+    <button class="cek" id="cek" type="button">CEK</button>
+    <div class="result" id="result"><p class="hint">Tekan CEK untuk memastikan kamu di mana.</p></div>
+    <button class="back" id="back" type="button" aria-disabled="true" hidden>
+      Kembali ke dunia nyata
+      <small id="backNote">Tidak tersedia</small>
+    </button>
+  </section>
+
+  <p class="dose">Gunakan sesuai dosis.</p>
+
+  <details id="kru" hidden>
+    <summary>Panel kru (ketuk judul 3x untuk menutup)</summary>
+    <label><input type="checkbox" id="optMimpi"> Hasil CEK: dunia mimpi (mati = nyata)</label>
+    <label><input type="checkbox" id="optLink"> Aliqa terhubung (tombol kembali menyala)</label>
+  </details>
+</main>
+
+<script>
+(function(){
+  var body=document.body, result=document.getElementById('result'), back=document.getElementById('back'),
+      note=document.getElementById('backNote'), flash=document.getElementById('flash'),
+      optMimpi=document.getElementById('optMimpi'), optLink=document.getElementById('optLink'), ctx=null;
+
+  function ac(){ try{ if(!ctx){ ctx=new (window.AudioContext||window.webkitAudioContext)(); } if(ctx.state==='suspended'){ctx.resume();} }catch(e){} return ctx; }
+
+  function tone(freq,start,dur,vol,type){
+    var c=ac(); if(!c) return;
+    var o=c.createOscillator(), g=c.createGain(), t=c.currentTime+start;
+    o.type=type||'sine'; o.frequency.value=freq;
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+dur+0.05);
+  }
+  function soundNyata(){ tone(1568,0,.5,.35); tone(784,0,.5,.12); tone(988,.24,.9,.35); tone(494,.24,.9,.12); }
+  function soundMimpi(){
+    var c=ac(); tone(1568,0,.45,.35); tone(784,0,.45,.12);
+    if(c){
+      var t=c.currentTime+.4, o=c.createOscillator(), g=c.createGain(), l=c.createOscillator(), lg=c.createGain();
+      o.type='sawtooth'; o.frequency.value=62; l.type='square'; l.frequency.value=24; lg.gain.value=.12;
+      g.gain.setValueAtTime(.12,t); g.gain.linearRampToValueAtTime(.0001,t+1.1);
+      l.connect(lg); lg.connect(g.gain); o.connect(g); g.connect(c.destination);
+      o.start(t); l.start(t); o.stop(t+1.15); l.stop(t+1.15);
+    }
+    try{ if(navigator.vibrate){ navigator.vibrate([90,40,90,40,90,40,90,40,90,40,300]); } }catch(e){}
+  }
+
+  function setBack(){
+    if(body.dataset.w!=='mimpi'){ back.hidden=true; return; }
+    back.hidden=false;
+    var on=optLink.checked;
+    back.classList.toggle('on',on);
+    back.setAttribute('aria-disabled',on?'false':'true');
+    note.textContent=on?'Terhubung dengan 1 pengguna dalam satu ikatan mimpi':'Tidak tersedia';
+  }
+
+  function show(world){
+    body.dataset.w=world;
+    if(world==='mimpi'){
+      result.innerHTML='<h2>Dunia Mimpi</h2><p>Kamu berada di dalam mimpi.</p>'; soundMimpi();
+    }else{
+      result.innerHTML='<h2>Nyata</h2><p>Kamu berada di dunia nyata.</p>'; soundNyata();
+    }
+    setBack();
+  }
+
+  document.getElementById('cek').addEventListener('click',function(){
+    // paksa animasi shake/glitch diputar ulang
+    body.dataset.w='idle'; void body.offsetWidth;
+    show(optMimpi.checked?'mimpi':'nyata');
+  });
+
+  back.addEventListener('click',function(){
+    if(back.getAttribute('aria-disabled')==='true'){
+      back.classList.remove('no'); void back.offsetWidth; back.classList.add('no'); return;
+    }
+    ac(); flash.classList.add('show');
+    setTimeout(function(){
+      optMimpi.checked=false; show('nyata'); back.classList.remove('on');
+      setTimeout(function(){ flash.classList.remove('show'); },400);
+    },900);
+  });
+
+  var brand=document.querySelector('.brand'), kru=document.getElementById('kru'), taps=0, tapTimer=null;
+  brand.style.userSelect='none'; brand.style.webkitUserSelect='none'; brand.style.touchAction='manipulation';
+  brand.addEventListener('click',function(){
+    taps++; clearTimeout(tapTimer); tapTimer=setTimeout(function(){taps=0;},600);
+    if(taps>=3){ taps=0; kru.hidden=!kru.hidden; if(!kru.hidden){ kru.open=true; } }
+  });
+
+  optLink.addEventListener('change',setBack);
+  optMimpi.addEventListener('change',function(){ if(!optMimpi.checked){ optLink.checked=false; } });
+})();
+</script>
+</body>
+</html>
